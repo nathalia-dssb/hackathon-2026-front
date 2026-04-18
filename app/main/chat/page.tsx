@@ -2,14 +2,17 @@
 
 import { useChat } from "@ai-sdk/react"
 import { GlassCard } from "../../../components/dashboard/glass-card"
-import { ScrollText, SendHorizontal, User, Bot } from "lucide-react"
+import { ScrollText, SendHorizontal, User, Bot, Image as ImageIcon, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useEffect, useRef, useState } from "react"
 
 const Page = () => {
   const { messages, sendMessage, status } = useChat()
   const [input, setInput] = useState("")
+  const [files, setFiles] = useState<FileList | null>(null)
+  const [previews, setPreviews] = useState<string[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -17,11 +20,46 @@ const Page = () => {
     }
   }, [messages])
 
+  // Cleanup previews on unmount
+  useEffect(() => {
+    return () => {
+      previews.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [previews])
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files
+    if (!selectedFiles) return
+
+    setFiles(selectedFiles)
+    
+    // Revoke old previews
+    previews.forEach((url) => URL.revokeObjectURL(url))
+    
+    const newPreviews = Array.from(selectedFiles).map((file) =>
+      URL.createObjectURL(file)
+    )
+    setPreviews(newPreviews)
+  }
+
+  const removeFiles = () => {
+    setFiles(null)
+    previews.forEach((url) => URL.revokeObjectURL(url))
+    setPreviews([])
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
+
   const handleSubmit = () => {
-    if (!input.trim() || status === "streaming" || status === "submitted")
+    if ((!input.trim() && !files) || status === "streaming" || status === "submitted")
       return
-    sendMessage({ text: input })
+    
+    sendMessage({
+      text: input,
+      files: files || undefined,
+    })
+    
     setInput("")
+    removeFiles()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -89,12 +127,25 @@ const Page = () => {
                     : "rounded-tl-none"
                 )}
               >
-                <div className="text-sm leading-relaxed whitespace-pre-wrap">
-                  {m.parts.map((part, i) =>
-                    part.type === "text" ? (
-                      <span key={i}>{part.text}</span>
-                    ) : null
-                  )}
+                <div className="flex flex-col gap-2">
+                  <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {m.parts.map((part, i) => {
+                      if (part.type === "text") {
+                        return <span key={i}>{part.text}</span>
+                      }
+                      if (part.type === "file" && part.mediaType?.startsWith("image/")) {
+                        return (
+                          <img
+                            key={i}
+                            src={part.url}
+                            alt={part.filename ?? "Attachment"}
+                            className="max-h-60 rounded-lg object-contain border border-white/10 mt-2"
+                          />
+                        )
+                      }
+                      return null
+                    })}
+                  </div>
                 </div>
               </GlassCard>
             </div>
@@ -113,21 +164,56 @@ const Page = () => {
           )}
       </div>
 
-      <div className="relative mt-auto">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Escribe tu mensaje..."
-          className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pr-14 pl-6 transition-all placeholder:text-blue-200/20 focus:ring-2 focus:ring-blue-500/40 focus:outline-none"
-        />
-        <button
-          onClick={handleSubmit}
-          disabled={!input.trim() || isResponding}
-          className="absolute top-2 right-2 rounded-xl bg-blue-500 p-2 text-white transition-colors hover:bg-blue-600 disabled:bg-white/10 disabled:opacity-50"
-        >
-          <SendHorizontal size={20} />
-        </button>
+      <div className="flex flex-col gap-2">
+        {previews.length > 0 && (
+          <div className="flex flex-wrap gap-2 px-2">
+            {previews.map((url, i) => (
+              <div key={i} className="relative group">
+                <img
+                  src={url}
+                  alt="Preview"
+                  className="h-20 w-20 object-cover rounded-lg border border-white/20"
+                />
+                <button
+                  onClick={removeFiles}
+                  className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="relative mt-auto">
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute left-2 top-1/2 -translate-y-1/2 p-2 text-blue-200/40 hover:text-blue-400 transition-colors"
+          >
+            <ImageIcon size={20} />
+          </button>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Escribe tu mensaje..."
+            className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pr-14 pl-12 transition-all placeholder:text-blue-200/20 focus:ring-2 focus:ring-blue-500/40 focus:outline-none"
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={(!input.trim() && !files) || isResponding}
+            className="absolute top-2 right-2 rounded-xl bg-blue-500 p-2 text-white transition-colors hover:bg-blue-600 disabled:bg-white/10 disabled:opacity-50"
+          >
+            <SendHorizontal size={20} />
+          </button>
+        </div>
       </div>
     </div>
   )

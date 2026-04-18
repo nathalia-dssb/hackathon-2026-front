@@ -6,7 +6,7 @@ const nextConfig = {
       {
         // Esto crea un túnel: de /backend-api/... a Railway
         source: '/backend-api/:path*',
-        destination: 'https://proyecto-hackathon-2026-back-production.up.railway.app/:path*',
+        destination: process.env.NEXT_PUBLIC_BACKAPI + '/:path*',
       },
     ];
   },
