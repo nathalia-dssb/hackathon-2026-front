@@ -3,6 +3,7 @@ import { ArrowRight, Shield, Menu, X } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
 import { useState } from "react"
 import { ParallaxHeroImage } from "./ParallaxHeroImage"
+import Link from "next/link"
 
 const logo = "/Imagenes/vantax_logo.svg"
 
@@ -111,9 +112,11 @@ export function Hero() {
                     {link.name}
                   </a>
                 ))}
+                <Link href="/login">
                 <button className="w-full rounded-xl bg-[#0175D9] px-8 py-4 text-lg text-white">
                   Comenzar ahora
                 </button>
+                </Link>
               </div>
             </motion.div>
           )}
