@@ -34,11 +34,11 @@ const Page = () => {
   const isResponding = status === "streaming" || status === "submitted"
 
   return (
-    <div className="flex h-[calc(100vh-80px)] max-h-200 flex-col gap-4 px-4 pb-6">
+    <div className="flex h-[calc(100svh-112px)] flex-col gap-4 px-0 pb-4 md:px-4">
       <header className="flex flex-col gap-1 py-4">
         <h1 className="flex items-center gap-2 text-2xl font-bold">
           <ScrollText className="text-blue-400" />
-          Chat Financiero
+          Chat con VanTax
         </h1>
         <p className="text-sm text-blue-200/60">
           Pregúntame cualquier duda sobre tus gastos, deducciones o fiscalidad.

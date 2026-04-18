@@ -1,7 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Reorder } from "@solar-icons/react/ssr"
 import { GlassCard } from "../../components/dashboard/glass-card"
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 import {
@@ -34,20 +32,16 @@ const chartConfig = {
 const Page = () => {
   const user_name = "Alexis"
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pb-20">
       <header className="flex flex-row items-center justify-between px-4 py-6 text-2xl font-medium">
         <p>
           ¡Hola,{" "}
           <span className="text-blue-400 mix-blend-lighten">{user_name}</span>!
         </p>
-
-        <Button className="h-10 w-10 rounded-full bg-blue-400/20">
-          <Reorder size={64} color="#fffff" />
-        </Button>
       </header>
 
       <section className="px-4">
-        <div className="rounded-md bg-background p-4">
+        <GlassCard className="p-4 border-blue-400/20 bg-blue-400/5 hover:bg-blue-400/10 transition-colors">
           <div className="flex items-start gap-4">
             <div className="rounded-full bg-blue-500/20 p-2 text-blue-400">
               <svg
@@ -79,7 +73,7 @@ const Page = () => {
               </p>
             </div>
           </div>
-        </div>
+        </GlassCard>
       </section>
 
       <section className="px-4">
@@ -135,7 +129,7 @@ const Page = () => {
       </section>
 
       <section className="px-4">
-        <div className="mt-2 min-w-full rounded-lg bg-blue-400/10 p-3">
+        <GlassCard className="border-blue-400/30 bg-blue-400/10">
           <p className="text-xs font-medium tracking-wider text-blue-300 uppercase">
             Próxima Declaración
           </p>
@@ -155,7 +149,7 @@ const Page = () => {
               días restantes
             </span>
           </p>
-        </div>
+        </GlassCard>
       </section>
     </div>
   )

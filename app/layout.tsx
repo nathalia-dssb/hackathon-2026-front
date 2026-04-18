@@ -13,6 +13,8 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
 })
 
+import { TooltipProvider } from "@/components/ui/tooltip"
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,7 +32,7 @@ export default function RootLayout({
       )}
     >
       <body>
-        {children}
+        <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>
   )
