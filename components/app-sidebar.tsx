@@ -41,7 +41,7 @@ const items = [
   },
   {
     title: "Perfil",
-    url:"/main/Profile",
+    url:"/main/profile",
     icon: User,
   }
 ]

@@ -1,211 +1,223 @@
-"use client"; // Necesario para usar hooks como useState y useRouter
+"use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation"; // Para la redirección
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { TAX_REGIME_OPTIONS } from "@/interfaces/Profile.types";
 import {
-  Card,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ChevronRight } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_BACKAPI;
 
-const Page = () => {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4 py-8 overflow-y-auto" style={{
-      background: 'linear-gradient(315deg, #002761 0%, #0175D9 35%, #7C90DB 65%, #F2FAFF 100%)'
-    }}>
-      <div className="flex items-center justify-center gap-0 shrink-0 relative">
-        <Image src="/Imagenes/Group.png" alt="Group" width={40} height={40} className="h-8 w-auto" />
-        <div className="relative">
-          <Image src="/Imagenes/VANTAX.png" alt="VANTAX" width={150} height={40} className="h-8 w-auto" />
-          <div className="absolute -right-10 top-1/2 transform -translate-y-1/2" style={{
-            animation: 'float 3s ease-in-out infinite'
-          }}>
-            <Image src="/Imagenes/MX.png" alt="MX" width={24} height={24} className="h-5 w-auto" />
-          </div>
-        </div>
-      </div>
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(-2px); }
-          50% { transform: translateY(2px); }
-        }
-      `}</style>
-      <CardDemo />
-    </div>
-  )
-}
 
-export function CardDemo() {
+export default function SignUpPage() {
   const router = useRouter();
-  
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    birthDate: "",
-    email: "",
-    password: "",
-    confirmPassword: ""
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  const [personal, setPersonal] = useState({
+    firstName: "", lastName: "", birthDate: "", email: "", password: "", confirmPassword: ""
   });
 
-  const [loading, setLoading] = useState(false);
+  const [tax, setTax] = useState({
+    taxRegime: "",
+    averageSalary: 0,
+    maxSalary: 0 
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      alert("Las contraseñas no coinciden");
-      return;
-    }
+    if (personal.password !== personal.confirmPassword) return alert("Contraseñas no coinciden");
 
     setLoading(true);
-    
     try {
-      const response = await fetch('/backend-api/users/signup', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        birth_date: formData.birthDate,
-        email: formData.email,
-        password: formData.password,
-      }),
-    });
+      const res = await fetch('/backend-api/users/signup', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: personal.firstName,
+          last_name: personal.lastName,
+          birth_date: personal.birthDate,
+          email: personal.email,
+          password: personal.password,
+        }),
+      });
 
-      const result = await response.json();
-
-      if (response.status === 201) {
-        console.log("Registro completo");
-        router.push("/login"); 
+      const result = await res.json();
+      if (res.status === 201 && result.data?.id) {
+        setUserId(result.data.id);
+        setStep(2);
       } else {
-        alert(result.message || "Error en el registro");
+        alert(result.message || "Error al registrar");
       }
-    } catch (error) {
-      console.error("Error al conectar con la API:", error);
-      alert("Error de conexión con el servidor");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStep2Submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userId) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/backend-api/users/${userId}/tax-profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          regimen_fiscal: tax.taxRegime,
+          current_salary: Number(tax.averageSalary),
+          max_income_allowed: Number(tax.maxSalary)
+        }),
+      });
+
+      if (res.ok) {
+        router.push("/login");
+      } else {
+        alert("Error al guardar perfil fiscal");
+      }
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Card className="w-full max-w-sm bg-white/20 backdrop-blur-md border border-white/30 px-4">
-      <form onSubmit={handleSubmit}>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-3">
-            {/* Nombre */}
-            <div className="grid gap-2">
-              <label htmlFor="firstName" className="text-xs font-medium leading-none">Nombre(s)</label>
-              <input
-                id="firstName"
-                type="text"
-                placeholder="Nombre(s)"
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-                className="flex h-12 w-full rounded-none border border-input bg-transparent px-4 py-3 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-white placeholder:text-white/60"
-              />
-            </div>
-            
-            {/* Apellido */}
-            <div className="grid gap-2">
-              <label htmlFor="lastName" className="text-xs font-medium leading-none">Apellido(s)</label>
-              <input
-                id="lastName"
-                type="text"
-                placeholder="Apellido(s)"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-                className="flex h-12 w-full rounded-none border border-input bg-transparent px-4 py-3 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-white placeholder:text-white/60"
-              />
-            </div>
+    <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4 py-8" style={{
+      background: 'linear-gradient(315deg, #002761 0%, #0175D9 35%, #7C90DB 65%, #F2FAFF 100%)'
+    }}>
+      
+      {/* Header */}
+      <div className="flex items-center justify-center gap-0 mb-4">
+        <Image src="/Imagenes/Group.png" alt="Logo" width={40} height={40} />
+        <div className="relative">
+          <Image src="/Imagenes/VANTAX.png" alt="Vantax" width={150} height={40} />
+          <div className="absolute -right-10 top-1/2 -translate-y-1/2 animate-bounce">
+            <Image src="/Imagenes/MX.png" alt="MX" width={24} height={24} />
+          </div>
+        </div>
+      </div>
 
-            {/* Fecha Nacimiento */}
-            <div className="grid gap-2">
-              <label htmlFor="birthDate" className="text-xs font-medium leading-none">Fecha de nacimiento</label>
-              <input
-                id="birthDate"
-                type="date"
-                value={formData.birthDate}
-                onChange={handleChange}
-                required
-                className="flex h-12 w-full rounded-none border border-input bg-transparent px-4 py-3 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-white"
-              />
-            </div>
+      {/* Stepper */}
+      <div className="flex items-center gap-4 mb-4">
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${step >= 1 ? 'bg-blue-600 text-white shadow-lg' : 'bg-white/20 text-white/40'}`}>1</div>
+        <div className={`h-1 w-12 transition-all duration-500 ${step >= 2 ? 'bg-blue-600' : 'bg-white/20'}`} />
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${step === 2 ? 'bg-blue-600 text-white shadow-lg' : 'bg-white/20 text-white/40'}`}>2</div>
+      </div>
 
-            {/* Email */}
-            <div className="grid gap-2">
-              <label htmlFor="email" className="text-xs font-medium leading-none">Correo electrónico</label>
-              <input
-                id="email"
-                type="email"
-                placeholder="x@ejemplo.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="flex h-12 w-full rounded-none border border-input bg-transparent px-4 py-3 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-white placeholder:text-white/60"
-              />
-            </div>
+      <Card className="w-full max-w-sm bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl">
+        <CardContent className="pt-8 px-6">
+          
+          {step === 1 ? (
+            <form onSubmit={handleStep1Submit} className="space-y-3">
+              <h3 className="text-white text-center font-bold mb-4">Crear Cuenta</h3>
+              <input required placeholder="Nombre(s)" className="vantax-input" onChange={(e) => setPersonal({...personal, firstName: e.target.value})} />
+              <input required placeholder="Apellidos" className="vantax-input" onChange={(e) => setPersonal({...personal, lastName: e.target.value})} />
+              <input type="date" required className="vantax-input" onChange={(e) => setPersonal({...personal, birthDate: e.target.value})} />
+              <input type="email" required placeholder="Correo" className="vantax-input" onChange={(e) => setPersonal({...personal, email: e.target.value})} />
+              <input type="password" required placeholder="Contraseña" className="vantax-input" onChange={(e) => setPersonal({...personal, password: e.target.value})} />
+              <input type="password" required placeholder="Confirmar" className="vantax-input" onChange={(e) => setPersonal({...personal, confirmPassword: e.target.value})} />
+              <Button type="submit" disabled={loading} className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg mt-4 shadow-lg active:scale-[0.98] transition-all">
+                {loading ? "Registrando..." : "Continuar"}
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleStep2Submit} className="space-y-6">
+              <h3 className="text-white text-center font-bold">Perfil Fiscal</h3>
+              
+              {/* 2. Selector de Régimen con estilo GlassCard */}
+              <div className="space-y-2">
+                <div className="h-20 flex items-center border border-white/10 bg-white/5 rounded-[2.5rem] overflow-hidden p-0">
+                  <Select onValueChange={(v) => setTax({...tax, taxRegime: v})}>
+                    <SelectTrigger className="w-full h-full border-none bg-transparent px-12 focus:ring-0 text-left">
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="text-xs text-white/60 font-bold uppercase tracking-tighter">Regimen</span>
+                        <div className="text-white text-sm font-medium">
+                          <SelectValue placeholder="Selecciona" />
+                        </div>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#0A0A1F] border-white/10 text-white">
+                      {TAX_REGIME_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-            {/* Password */}
-            <div className="grid gap-2">
-              <label htmlFor="password" className="text-xs font-medium leading-none">Contraseña</label>
-              <input
-                id="password"
-                type="password"
-                placeholder="*****"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="flex h-12 w-full rounded-none border border-input bg-transparent px-4 py-3 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-white placeholder:text-white/60"
+              <SalaryInputComponent 
+                label="Salario medio" 
+                value={tax.averageSalary} 
+                description="Salario que recibes promedio al mes"
+                onChange={(val: number) => setTax({...tax, averageSalary: val})}
               />
-            </div>
 
-            {/* Confirm Password */}
-            <div className="grid gap-2">
-              <label htmlFor="confirmPassword" className="text-xs font-medium leading-none">Confirmar contraseña</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                placeholder="*****"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                className="flex h-12 w-full rounded-none border border-input bg-transparent px-4 py-3 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-white placeholder:text-white/60"
+              <SalaryInputComponent 
+                label="Salario Max" 
+                value={tax.maxSalary} 
+                description="Salario máximo que puedes llegar a percibir"
+                onChange={(val: number) => setTax({...tax, maxSalary: val})}
+              />
+
+              <Button type="submit" disabled={loading} className="w-full h-16 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl shadow-lg active:scale-[0.98] transition-all">
+                {loading ? "Guardando..." : "Finalizar Registro"}
+              </Button>
+            </form>
+          )}
+
+        </CardContent>
+      </Card>
+
+      <style jsx>{`
+        .vantax-input {
+          width: 100%; height: 3.5rem; background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 0.75rem;
+          padding: 0 1rem; color: white; outline: none; transition: border 0.2s;
+        }
+        .vantax-input:focus { border-color: #3b82f6; }
+      `}</style>
+    </div>
+  );
+}
+
+function SalaryInputComponent({ label, value, description, onChange }: { label: string, value: number, description: string, onChange: (val: number) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <div className="space-y-2">
+      <div 
+        onClick={() => inputRef.current?.focus()}
+        className="h-20 flex items-center border border-white/10 bg-white/5 rounded-[2.5rem] cursor-text group"
+      >
+        <div className="w-full h-full px-12 flex justify-between items-center text-left">
+          <div className="flex flex-col items-start gap-1">
+            <span className="text-xs text-white/60 font-bold uppercase tracking-tighter">{label}</span>
+            <div className="flex items-center gap-1">
+              <span className="text-white font-medium text-sm">$</span>
+              <input 
+                ref={inputRef} type="number"
+                value={value === 0 ? '' : value}
+                onChange={(e) => onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                placeholder="0"
+                className="bg-transparent border-none outline-none text-white text-sm w-full font-medium placeholder:text-white/20"
               />
             </div>
           </div>
-        </CardContent>
-        
-        <CardFooter className="flex-col gap-3 pb-6">
-          <Button 
-            type="submit" 
-            disabled={loading}
-            className="w-full h-12 bg-blue-500 text-base text-white hover:bg-blue-600"
-          >
-            {loading ? "Registrando..." : "Registrarse"}
-          </Button>
-          <Button variant="outline" className="w-full h-12 text-base bg-white/10 hover:bg-white/20 border-white/30 text-white">
-            Entrar con Google
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
-  )
+          <ChevronRight className="h-6 w-6 text-white/30 group-hover:text-white transition-colors" />
+        </div>
+      </div>
+      <p className="text-[10px] text-white/40 ml-10 italic">{description}</p>
+    </div>
+  );
 }
-
-export default Page;
