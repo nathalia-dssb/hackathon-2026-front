@@ -84,21 +84,45 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    body {
+      @apply bg-background text-foreground min-h-screen;
+      /* Removed background-image and attachment for performance. 
+         Gradients are now handled by FixedBackground component. */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      }
+    body::-webkit-scrollbar {
+      display: none;
     }
-  body {
-    @apply bg-background text-foreground min-h-screen;
-    background-image: 
-      radial-gradient(circle at 10% 20%, rgba(0, 39, 97, 0.6) 0%, transparent 40%),
-      radial-gradient(circle at 90% 80%, rgba(1, 117, 217, 0.4) 0%, transparent 40%),
-      radial-gradient(circle at 50% 50%, rgba(0, 39, 97, 0.2) 0%, transparent 60%),
-      radial-gradient(circle at 80% 10%, rgba(1, 117, 217, 0.3) 0%, transparent 30%);
-    background-attachment: fixed;
+    html {
+      @apply font-mono;
+      scroll-behavior: auto !important;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      }
+    -ms-overflow-style: none;
     }
-  html {
-    @apply font-mono;
-    }
+  html::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 [data-slot="sidebar-inset"] {
   background-color: transparent !important;
+}
+
+@layer utilities {
+  .snap-y-mandatory {
+    scroll-snap-type: y mandatory;
+  }
+  .snap-start {
+    scroll-snap-align: start;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

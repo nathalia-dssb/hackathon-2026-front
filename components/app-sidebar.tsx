@@ -20,6 +20,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "./ui/button"
 import { X } from "lucide-react"
+import Image from "next/image"
 
 const items = [
   {
@@ -47,18 +48,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <div className="flex items-center justify-between gap-2 px-2 py-4">
-          <div className="flex items-center gap-2">
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-500 text-white">
-              <LayoutDashboard className="size-4" />
-            </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold text-blue-100">
-                Vantax
-              </span>
-              <span className="truncate text-xs text-blue-400">
-                Asistente Fiscal
-              </span>
-            </div>
+          <div className="flex items-start gap-2">
+            <Image
+              width={176}
+              height={28}
+              alt=""
+              src="/Imagenes/vantax_logo.svg"
+            />
           </div>
           {isMobile && (
             <Button

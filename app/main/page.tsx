@@ -41,7 +41,7 @@ const Page = () => {
       </header>
 
       <section className="px-4">
-        <GlassCard className="p-4 border-blue-400/20 bg-blue-400/5 hover:bg-blue-400/10 transition-colors">
+        <GlassCard className="border-blue-400/20 bg-blue-400/5 p-4 transition-colors hover:bg-blue-400/10">
           <div className="flex items-start gap-4">
             <div className="rounded-full bg-blue-500/20 p-2 text-blue-400">
               <svg
