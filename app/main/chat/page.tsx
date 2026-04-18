@@ -1,13 +1,20 @@
 "use client"
 
 import { useChat } from "@ai-sdk/react"
+import { DefaultChatTransport } from "ai"
 import { GlassCard } from "../../../components/dashboard/glass-card"
 import { ScrollText, SendHorizontal, User, Bot, Image as ImageIcon, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useEffect, useRef, useState } from "react"
 
 const Page = () => {
-  const { messages, sendMessage, status } = useChat()
+  const { messages, sendMessage, status } = useChat({
+    transport: new DefaultChatTransport({
+      body: {
+        userId: typeof window !== "undefined" ? localStorage.getItem("userId") : null,
+      },
+    }),
+  })
   const [input, setInput] = useState("")
   const [files, setFiles] = useState<FileList | null>(null)
   const [previews, setPreviews] = useState<string[]>([])
