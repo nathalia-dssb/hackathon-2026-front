@@ -9,13 +9,25 @@ import {
 const Page = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4 py-8 overflow-y-auto" style={{
-      background: 'linear-gradient(135deg, #7C90DB 0%, #F2FAFF 25%, #0175D9 50%, #002761 100%)'
+      background: 'linear-gradient(315deg, #002761 0%, #0175D9 35%, #7C90DB 65%, #F2FAFF 100%)'
     }}>
-      <div className="flex items-center justify-center gap-0 shrink-0">
+      <div className="flex items-center justify-center gap-0 shrink-0 relative">
         <Image src="/Imagenes/Group.png" alt="Group" width={40} height={40} className="h-8 w-auto" />
-        <Image src="/Imagenes/VANTAX.png" alt="VANTAX" width={150} height={40} className="h-8 w-auto" />
-        <Image src="/Imagenes/MX.png" alt="MX" width={40} height={40} className="h-8 w-auto" />
+        <div className="relative">
+          <Image src="/Imagenes/VANTAX.png" alt="VANTAX" width={150} height={40} className="h-8 w-auto" />
+          <div className="absolute -right-10 top-1/2 transform -translate-y-1/2" style={{
+            animation: 'float 3s ease-in-out infinite'
+          }}>
+            <Image src="/Imagenes/MX.png" alt="MX" width={24} height={24} className="h-5 w-auto" />
+          </div>
+        </div>
       </div>
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(-2px); }
+          50% { transform: translateY(2px); }
+        }
+      `}</style>
       <CardDemo />
     </div>
   )
