@@ -41,9 +41,9 @@ const items = [
   },
   {
     title: "Perfil",
-    url:"/main/profile",
+    url: "/main/profile",
     icon: User,
-  }
+  },
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
