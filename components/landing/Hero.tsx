@@ -74,14 +74,26 @@ export function Hero() {
               {link.name}
             </motion.a>
           ))}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="rounded-full px-5 py-2 text-sm text-white shadow-lg shadow-blue-500/20 transition-all"
-            style={{ backgroundColor: "#0175D9", fontWeight: "500" }}
-          >
-            Comenzar
-          </motion.button>
+          <Link href="/sign-up">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="rounded-full px-5 py-2 text-sm text-white shadow-lg shadow-blue-500/20 transition-all"
+              style={{ backgroundColor: "#0175D9", fontWeight: "500" }}
+            >
+              Regístrate
+            </motion.button>
+          </Link>
+          <Link href="/login">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="rounded-full px-5 py-2 text-sm text-white shadow-lg shadow-blue-500/20 transition-all"
+              style={{ backgroundColor: "#0175D9", fontWeight: "500" }}
+            >
+              Inicia Sesión
+            </motion.button>
+          </Link>
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -112,10 +124,15 @@ export function Hero() {
                     {link.name}
                   </a>
                 ))}
+                <Link href="/sign-up">
+                  <button className="w-full rounded-xl bg-[#0175D9] px-8 py-4 text-lg text-white">
+                    Regístrate
+                  </button>
+                </Link>
                 <Link href="/login">
-                <button className="w-full rounded-xl bg-[#0175D9] px-8 py-4 text-lg text-white">
-                  Comenzar ahora
-                </button>
+                  <button className="w-full rounded-xl bg-[#0175D9] px-8 py-4 text-lg text-white">
+                    Inicia Sesión
+                  </button>
                 </Link>
               </div>
             </motion.div>
