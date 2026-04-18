@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,7 @@ const Page = () => {
       background: 'linear-gradient(135deg, #7C90DB 0%, #F2FAFF 25%, #0175D9 50%, #002761 100%)'
     }}>
       <div className="flex items-center justify-center gap-0 shrink-0">
+        <Link href="/">
         <Image src="/Imagenes/Group.png" alt="Group" width={40} height={40} className="h-8 w-auto" />
         <div className="relative">
           <Image src="/Imagenes/VANTAX.png" alt="VANTAX" width={150} height={40} className="h-8 w-auto" />
@@ -23,8 +24,10 @@ const Page = () => {
             animation: 'float 3s ease-in-out infinite'
           }}>
             <Image src="/Imagenes/MX.png" alt="MX" width={24} height={24} className="h-5 w-auto" />
+          
           </div>
         </div>
+        </Link>
       </div>
       <style>{`
         @keyframes float {
@@ -57,8 +60,6 @@ export function CardDemo() {
     setLoading(true);
 
     try {
-      // USAMOS EL TÚNEL LOCAL PARA SALTAR EL CORS
-      console.log("🚀 Intentando login vía túnel...");
       
       const response = await fetch('/backend-api/users/login', {
         method: "POST",
@@ -74,13 +75,11 @@ export function CardDemo() {
       const result = await response.json();
 
       if (response.status === 201 || response.status === 200) {
-        console.log("✅ Login exitoso");
         
         // GUARDAMOS EL ID EN LOCALSTORAGE
         if (result.data && result.data.id) {
           localStorage.setItem("userId", result.data.id);
           localStorage.setItem("userEmail", result.data.email);
-          console.log("🔑 ID almacenado en LocalStorage:", result.data.id);
         }
 
         router.push("/main/chat"); 
@@ -88,7 +87,7 @@ export function CardDemo() {
         alert(result.message || "Credenciales incorrectas");
       }
     } catch (error) {
-      console.error("❌ Error en el túnel de login:", error);
+      console.error("Error en el túnel de login:", error);
       alert("Error de comunicación con el túnel local");
     } finally {
       setLoading(false);
