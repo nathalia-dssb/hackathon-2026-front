@@ -12,10 +12,12 @@ export interface UserProfileData {
 }
 
 export const TAX_REGIME_OPTIONS: SelectOption[] = [
-  { value: 'RESICO', label: 'RESICO (Confianza)' },
   { value: 'SUELDOS_Y_SALARIOS', label: 'Sueldos y Salarios' },
+  { value: 'RESICO_PERSONAS_FISICAS', label: 'RESICO (Personas Físicas)' },
   { value: 'ACTIVIDAD_PROFESIONAL', label: 'Actividad Profesional' },
   { value: 'PLATAFORMAS_TECNOLOGICAS', label: 'Plataformas Tecnológicas' },
+  { value: 'ARRENDAMIENTO', label: 'Arrendamiento' },
+  { value: 'INTERESES', label: 'Intereses' },
 ];
 
 export interface SalaryInputProps {

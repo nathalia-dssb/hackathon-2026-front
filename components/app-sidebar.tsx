@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { LayoutDashboard, MessageSquare, FileText } from "lucide-react"
+import { LayoutDashboard, MessageSquare, FileText, User } from "lucide-react"
 
 import {
   Sidebar,
@@ -21,6 +21,7 @@ import { usePathname } from "next/navigation"
 import { Button } from "./ui/button"
 import { X } from "lucide-react"
 import Image from "next/image"
+import { title } from "node:process"
 
 const items = [
   {
@@ -38,6 +39,11 @@ const items = [
     url: "/main/summaries",
     icon: FileText,
   },
+  {
+    title: "Perfil",
+    url:"/main/Profile",
+    icon: User,
+  }
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

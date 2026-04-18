@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -12,172 +12,251 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronRight, User, ShieldCheck, ChevronDown } from 'lucide-react';
+import { ChevronRight, User, ShieldCheck } from 'lucide-react';
+
 import { GlassCard } from "../../../components/dashboard/glass-card";
 import { LogoutModal } from "../../../components/modals/logout-modal"; 
+
 import { 
   TAX_REGIME_OPTIONS, 
-  UserProfileData, 
-  SalaryInputProps 
+  UserProfileData 
 } from '../../../interfaces/Profile.types';
 
 export default function ProfilePage() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   const [profile, setProfile] = useState<UserProfileData>({
-    firstName: 'Alan Orlando',
-    email: 'Alan78707@gmail.com',
-    taxRegime: 'PLATAFORMAS_TECNOLOGICAS',
-    averageSalary: 30000,
-    maxSalary: 40000,
+    firstName: '',
+    email: '',
+    taxRegime: '',
+    averageSalary: 0,
+    maxSalary: 0,
   });
 
-  const handleUpdateProfile = (updatedData: UserProfileData) => {
-    console.log("Peticion", updatedData);
+  useEffect(() => {
+    const loadProfileData = async () => {
+      const userId = localStorage.getItem("userId");
+      if (!userId) return;
+
+      try {
+        const [userRes, taxRes] = await Promise.all([
+          fetch(`/backend-api/users/${userId}`),
+          fetch(`/backend-api/users/${userId}/tax-profile`)
+        ]);
+
+        const userJson = await userRes.json();
+        const taxJson = await taxRes.json();
+
+        if (userRes.ok) {
+          const u = userJson.data;
+          const t = taxRes.ok ? taxJson.data : null;
+
+          setProfile({
+            firstName: `${u.first_name} ${u.last_name}`,
+            email: u.email,
+            taxRegime: t?.regimen_fiscal || '',
+            averageSalary: t?.current_salary || 0,
+            maxSalary: t?.max_income_allowed || 0,
+          });
+        }
+      } catch (error) {
+        console.error("Fallo en la carga de perfil:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfileData();
+  }, []);
+
+  const syncTaxProfile = async (updatedFields: Partial<UserProfileData>) => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+
+    const payload = {
+      regimen_fiscal: updatedFields.taxRegime || profile.taxRegime,
+      current_salary: updatedFields.averageSalary !== undefined 
+        ? updatedFields.averageSalary 
+        : profile.averageSalary,
+      max_income_allowed: updatedFields.maxSalary !== undefined 
+        ? updatedFields.maxSalary 
+        : profile.maxSalary,
+    };
+
+    try {
+      const res = await fetch(`/backend-api/users/${userId}/tax-profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (res.ok) {
+        console.log("Sincronización exitosa:", payload);
+      } else {
+        const errData = await res.json();
+        console.error("Error de validación:", errData);
+      }
+    } catch (err) {
+      console.error("Error de red al sincronizar:", err);
+    }
   };
 
-  const handleFieldChange = (field: keyof UserProfileData, value: string | number) => {
-    const newProfile = { ...profile, [field]: value };
-    setProfile(newProfile);
-    handleUpdateProfile(newProfile);
+  const handleRegimeChange = (value: string) => {
+    setProfile(prev => ({ ...prev, taxRegime: value }));
+    syncTaxProfile({ taxRegime: value });
+  };
+
+  const handleLocalSalaryChange = (field: 'averageSalary' | 'maxSalary', value: number) => {
+    setProfile(prev => ({ ...prev, [field]: value }));
   };
 
   const handleConfirmLogout = () => {
-    console.log("Cerrando sesión para", profile.email);
-    setIsLogoutModalOpen(false);
+    localStorage.clear();
+    window.location.href = "/login";
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#02011A] flex items-center justify-center">
+        <div className="text-blue-400 animate-pulse font-mono text-xs">ESTABLECIENDO CONEXIÓN SEGURA...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen w-full max-w-md mx-auto p-6 flex flex-col gap-8 text-white overflow-y-auto pb-20 ">
+    <div className="min-h-screen w-full max-w-md mx-auto p-6 flex flex-col gap-8 text-white overflow-y-auto pb-20">
       
+      {/* Avatar */}
       <div className="flex flex-col items-center gap-4 mt-8">
-        {/** 
-        <div className="relative">
-          <Avatar className="h-32 w-32 border-2 border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback className="bg-blue-500/20 text-blue-400">AO</AvatarFallback>
-          </Avatar>
-        </div>
-        */}
+        <Avatar className="h-32 w-32 border-2 border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+          <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${profile.firstName}`} />
+          <AvatarFallback>AO</AvatarFallback>
+        </Avatar>
       </div>
 
+      {/* Info Personal */}
       <section className="space-y-4">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-blue-200/60 ml-1 uppercase tracking-wider">
           <User size={16} /> Información Personal
         </h2>
         <GlassCard className="space-y-3 p-4 border-white/5">
-          <Input 
-            value={profile.firstName} 
-            readOnly
-            className="h-12 rounded-xl border-white/10 bg-white/5 text-blue-200/80 cursor-default focus:ring-0 px-6"
-          />
-          <Input 
-            value={profile.email} 
-            readOnly 
-            className="h-12 rounded-xl border-white/10 bg-white/5 text-blue-200/80 cursor-default focus:ring-0 px-6"
-          />
+          <Input value={profile.firstName} readOnly className="h-12 bg-white/5 border-white/10 px-6 text-blue-200/80" />
+          <Input value={profile.email} readOnly className="h-12 bg-white/5 border-white/10 px-6 text-blue-200/80" />
         </GlassCard>
       </section>
 
       <Separator className="bg-white/5" />
 
-      {/* Sección Información Fiscal */}
+      {/* Info Fiscal */}
       <section className="space-y-6">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-blue-200/60 ml-1 uppercase tracking-wider">
           <ShieldCheck size={16} /> Información Fiscal
         </h2>
         
+        {/* Selector de Régimen */}
         <div className="space-y-2">
-          <GlassCard className="relative h-20 flex items-center border-white/10 bg-white/5 hover:border-blue-500/30 transition-all overflow-hidden p-0 rounded-[2.5rem]">
-            <Select 
-              value={profile.taxRegime} 
-              onValueChange={(val) => handleFieldChange('taxRegime', val)}
-            >
-              <SelectTrigger className="w-full h-full border-none bg-transparent shadow-none focus:ring-0 focus:ring-offset-0 px-12 flex justify-between items-center group [&>svg]:h-6 [&>svg]:w-6 [&>svg]:text-slate-300">
-                <div className="flex flex-col items-start text-left gap-1">
+          <GlassCard className="h-20 flex items-center border-white/10 bg-white/5 rounded-[2.5rem] overflow-hidden p-0">
+            <Select value={profile.taxRegime} onValueChange={handleRegimeChange}>
+              <SelectTrigger className="w-full h-full border-none bg-transparent px-12 focus:ring-0">
+                <div className="flex flex-col items-start gap-1">
                   <span className="text-xs text-blue-400/60 font-medium">Regimen</span>
-                  <div className="text-blue-100 font-medium text-sm leading-tight max-w-[180px]">
-                    <SelectValue placeholder="Selecciona tu régimen" />
-                  </div>
+                  <SelectValue placeholder="Selecciona" />
                 </div>
               </SelectTrigger>
-              <SelectContent className="bg-[#0A0A1F] border-white/10 text-blue-100 rounded-xl">
+              <SelectContent className="bg-[#0A0A1F] border-white/10 text-white">
                 {TAX_REGIME_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value} className="focus:bg-blue-500/20 focus:text-white">
-                    {opt.label}
-                  </SelectItem>
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </GlassCard>
-          <p className="text-[10px] text-blue-200/40 ml-10 italic">
-            El regimen marca a donde perteneces para el cálculo de impuestos
-          </p>
         </div>
 
-        <SalaryInput 
+        {/* Salario Medio */}
+        <SalaryInputComponent 
           label="Salario medio" 
           value={profile.averageSalary} 
           description="Salario que recibes promedio al mes"
-          onChange={(val) => handleFieldChange('averageSalary', val)}
+          onChange={(val: number) => handleLocalSalaryChange('averageSalary', val)}
+          onSync={() => syncTaxProfile({ averageSalary: profile.averageSalary })}
         />
 
-        <SalaryInput 
+        {/* Salario Máximo */}
+        <SalaryInputComponent 
           label="Salario Max" 
           value={profile.maxSalary} 
           description="Salario máximo que puedes llegar a percibir"
-          onChange={(val) => handleFieldChange('maxSalary', val)}
+          onChange={(val: number) => handleLocalSalaryChange('maxSalary', val)}
+          onSync={() => syncTaxProfile({ maxSalary: profile.maxSalary })}
         />
       </section>
 
-      <div className="mt-auto pb-8">
-        <Button 
-          style={{ backgroundColor: '#002761' }}
-          className="w-full h-16 rounded-2xl text-white border border-white/10 text-xl font-medium shadow-[0_4px_20px_rgba(0,0,0,0.4)] active:scale-[0.98] transition-all hover:bg-[#050525]"
-          onClick={() => setIsLogoutModalOpen(true)}
-        >
-          Cerrar Sesión
-        </Button>
-      </div>
+      <Button 
+        onClick={() => setIsLogoutModalOpen(true)}
+        className="mt-auto h-16 rounded-2xl bg-[#002761] border border-white/10 hover:bg-[#050525] transition-all"
+      >
+        Cerrar Sesión
+      </Button>
 
       <LogoutModal 
         isOpen={isLogoutModalOpen} 
         onClose={() => setIsLogoutModalOpen(false)} 
-        onConfirm={handleConfirmLogout}
+        onConfirm={handleConfirmLogout} 
       />
     </div>
   );
 }
 
-function SalaryInput({ label, value, description, onChange }: SalaryInputProps) {
+function SalaryInputComponent({ 
+  label, 
+  value, 
+  description, 
+  onChange, 
+  onSync 
+}: { 
+  label: string, 
+  value: number, 
+  description: string, 
+  onChange: (val: number) => void, 
+  onSync: () => void 
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') inputRef.current?.blur();
+  };
 
   return (
     <div className="space-y-2">
       <GlassCard 
         onClick={() => inputRef.current?.focus()}
-        className="relative h-20 flex items-center border-white/10 bg-white/5 hover:border-blue-500/30 transition-all overflow-hidden p-0 rounded-[2.5rem] cursor-text group"
+        className="h-20 flex items-center border-white/10 bg-white/5 rounded-[2.5rem] cursor-text group p-0"
       >
         <div className="w-full h-full px-12 flex justify-between items-center">
-          <div className="flex flex-col items-start text-left gap-1">
+          <div className="flex flex-col items-start gap-1 w-full text-left">
             <span className="text-xs text-blue-400/60 font-medium">{label}</span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 w-full">
               <span className="text-blue-100 font-medium text-sm">$</span>
               <input 
                 ref={inputRef}
                 type="number"
-                value={value}
-                onChange={(e) => onChange(Number(e.target.value))}
-                className="bg-transparent border-none outline-none text-blue-100 font-medium text-sm w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-blue-200/20 leading-tight"
+                value={value === 0 ? '' : value}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onChange(val === '' ? 0 : Number(val));
+                }}
+                onBlur={onSync}
+                onKeyDown={handleKeyDown}
+                placeholder="0"
+                className="bg-transparent border-none outline-none text-white text-sm w-full font-medium placeholder:text-blue-200/20"
               />
             </div>
           </div>
           <ChevronRight className="h-6 w-6 text-blue-400/40 group-hover:text-blue-400 transition-colors shrink-0" />
         </div>
       </GlassCard>
-      <p className="text-[10px] text-blue-200/40 ml-10 italic">
-        {description}
-      </p>
+      <p className="text-[10px] text-blue-200/40 ml-10 italic">{description}</p>
     </div>
   );
 }
