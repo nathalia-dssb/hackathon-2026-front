@@ -17,3 +17,10 @@ export const TAX_REGIME_OPTIONS: SelectOption[] = [
   { value: 'ACTIVIDAD_PROFESIONAL', label: 'Actividad Profesional' },
   { value: 'PLATAFORMAS_TECNOLOGICAS', label: 'Plataformas Tecnológicas' },
 ];
+
+export interface SalaryInputProps {
+  label: string;
+  value: number;
+  description: string;
+  onChange: (val: number) => void;
+}
