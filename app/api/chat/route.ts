@@ -101,7 +101,7 @@ export async function POST(req: Request) {
               fileBlob = await response.blob()
             }
 
-            formData.append("file", fileBlob, part.filename ?? "ticket.jpg")
+            formData.append("receipt", fileBlob, part.filename ?? "ticket.jpg")
 
             const backendUrl = process.env.NEXT_PUBLIC_BACKAPI
             if (!backendUrl) {
