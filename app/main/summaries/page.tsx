@@ -8,9 +8,21 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  ResponsiveContainer,
 } from "recharts"
+import { motion } from "motion/react"
+import { 
+  TrendingUp, 
+  Calendar, 
+  ReceiptText, 
+  Sparkles,
+  ChevronRight,
+  ArrowUpRight,
+  ArrowDownRight
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { GlassCard } from "@/components/dashboard/glass-card"
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart"
 import {
   Dialog,
@@ -20,6 +32,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 
 const monthOptions = ["Julio", "Agosto", "Septiembre", "Octubre"]
 
@@ -58,22 +78,26 @@ const transactions = [
   {
     date: "02 Jul",
     description: "Pago nómina",
-    amount: "+$2,100.00",
+    amount: 2100.00,
+    type: "income"
   },
   {
     date: "11 Jul",
     description: "Compra supermercado",
-    amount: "-$215.40",
+    amount: 215.40,
+    type: "expense"
   },
   {
     date: "16 Jul",
     description: "Transferencia recibida",
-    amount: "+$540.00",
+    amount: 540.00,
+    type: "income"
   },
   {
     date: "21 Jul",
     description: "Pago servicios",
-    amount: "-$120.80",
+    amount: 120.80,
+    type: "expense"
   },
 ]
 
@@ -83,104 +107,221 @@ export default function ReportesPage() {
   const chartData = useMemo(() => monthlyData[month], [month])
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-6 text-slate-900">
-      <div className="mx-auto w-full max-w-md rounded-[32px] border border-slate-300/60 bg-white p-6 shadow-xl shadow-slate-200/50">
-        <header className="mb-6 text-center">
-          <h1 className="mt-3 text-3xl font-semibold">Reporte mensual</h1>
-        </header>
+    <div className="flex flex-col gap-6 pb-20">
+      <header className="flex flex-col gap-1 px-4 py-6">
+        <h1 className="flex items-center gap-2 text-2xl font-bold">
+          <TrendingUp className="text-blue-400" />
+          Reporte Mensual
+        </h1>
+        <p className="text-sm text-blue-200/60">
+          Visualiza el rendimiento de tus finanzas y deducciones.
+        </p>
+      </header>
 
-        <section className="mb-6 rounded-[28px] border border-slate-200/80 bg-slate-950/95 p-4 text-white shadow-sm">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Mes</p>
-              <p className="text-lg font-semibold">{month}</p>
+      {/* Mes Selector */}
+      <section className="px-4">
+        <GlassCard className="flex items-center justify-between gap-4 p-4 border-blue-400/20 bg-blue-400/5">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-blue-500/20 p-2 text-blue-400">
+              <Calendar size={20} />
             </div>
-            <label className="block w-2/5">
-              <span className="sr-only">Elegir mes</span>
-              <select
-                value={month}
-                onChange={(event) => setMonth(event.target.value)}
-                className="w-full rounded-full border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white outline-none transition focus:border-blue-400"
-              >
-                {monthOptions.map((option) => (
-                  <option key={option} value={option} className="bg-slate-900 text-white">
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-blue-400/60">Seleccionar Periodo</p>
+              <p className="text-lg font-bold text-white">{month}</p>
+            </div>
+          </div>
+          
+          <Select value={month} onValueChange={setMonth}>
+            <SelectTrigger className="w-[140px] rounded-xl border-white/10 bg-white/5 text-sm text-white focus:ring-1 focus:ring-blue-500">
+              <SelectValue placeholder="Mes" />
+            </SelectTrigger>
+            <SelectContent className="border-white/10 bg-[#0A0A1F] text-white">
+              {monthOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </GlassCard>
+      </section>
+
+      {/* Chart Section */}
+      <section className="px-4">
+        <GlassCard className="flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold">Flujo de Efectivo</h3>
+              <p className="text-xs text-blue-200/60">Gastos vs Deducciones por día</p>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-1.5">
+                <div className="h-2 w-2 rounded-full bg-[#7C90DB]" />
+                <span className="text-[10px] text-blue-200/60">Gastos</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="h-2 w-2 rounded-full bg-[#0175D9]" />
+                <span className="text-[10px] text-blue-200/60">Deducciones</span>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-5 max-h-64 overflow-y-auto rounded-3xl bg-slate-900/95 p-3">
-            <ChartContainer
-              config={{
-                gastos: { label: "Gastos", color: "#7C90DB" },
-                deducciones: { label: "Deducciones", color: "#0175D9" },
-              }}
-              className="h-full"
-            >
-              <LineChart data={chartData} margin={{ top: 25, right: 40, left: 10, bottom: 25 }}>
-                <CartesianGrid stroke="rgba(148,163,184,0.16)" vertical={false} />
+          <ChartContainer
+            config={{
+              gastos: { label: "Gastos", color: "#7C90DB" },
+              deducciones: { label: "Deducciones", color: "#0175D9" },
+            }}
+            className="h-[250px] w-full"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                 <XAxis
                   dataKey="day"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "rgba(241,245,249,0.8)", fontSize: 12 }}
+                  tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
+                  dy={10}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "rgba(241,245,249,0.8)", fontSize: 12 }}
+                  tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
+                  dx={-10}
                 />
-                <Tooltip shared={false} cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                <Line type="monotone" dataKey="gastos" stroke="#7C90DB" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 5 }} />
-                <Line type="monotone" dataKey="deducciones" stroke="#0175D9" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 5 }} />
+                <Tooltip 
+                  content={<ChartTooltipContent indicator="dot" />} 
+                  cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="gastos" 
+                  stroke="#7C90DB" 
+                  strokeWidth={3} 
+                  dot={{ r: 4, fill: "#7C90DB", strokeWidth: 0 }} 
+                  activeDot={{ r: 6, strokeWidth: 0 }} 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="deducciones" 
+                  stroke="#0175D9" 
+                  strokeWidth={3} 
+                  dot={{ r: 4, fill: "#0175D9", strokeWidth: 0 }} 
+                  activeDot={{ r: 6, strokeWidth: 0 }} 
+                />
               </LineChart>
-            </ChartContainer>
-          </div>
-        </section>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </GlassCard>
+      </section>
 
-        <section className="mb-6">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold">Deductables</h2>
-            <span className="text-sm text-slate-500">Estado de cuenta</span>
-          </div>
-          <div className="space-y-2 rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm">
-            {transactions.map((transaction) => (
-              <div key={transaction.date} className="grid grid-cols-[80px_1fr_auto] gap-3 rounded-2xl border-b border-slate-200/80 pb-3 last:border-b-0 last:pb-0">
-                <div className="text-xs text-slate-500">{transaction.date}</div>
-                <div className="text-sm font-medium text-slate-900">{transaction.description}</div>
-                <div className={`text-sm font-semibold ${transaction.amount.startsWith("-") ? "text-rose-600" : "text-emerald-600"}`}>
-                  {transaction.amount}
+      {/* Transactions Section */}
+      <section className="px-4">
+        <div className="mb-4 flex items-center justify-between px-2">
+          <h2 className="flex items-center gap-2 text-base font-bold text-white">
+            <ReceiptText size={18} className="text-blue-400" />
+            Movimientos Recientes
+          </h2>
+          <Button variant="link" className="h-auto p-0 text-xs text-blue-400">Ver todo</Button>
+        </div>
+        
+        <div className="space-y-3">
+          {transactions.map((transaction, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+            >
+              <GlassCard className="flex items-center justify-between p-4 border-white/5 bg-white/5 transition-all hover:bg-white/10">
+                <div className="flex items-center gap-4">
+                  <div className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-2xl",
+                    transaction.type === "income" ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+                  )}>
+                    {transaction.type === "income" ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">{transaction.description}</p>
+                    <p className="text-[10px] text-blue-200/40 uppercase tracking-widest">{transaction.date}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="w-full rounded-full px-6 text-white">
-                Recomendaciones
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Recomendaciones AI</DialogTitle>
-                <DialogDescription>Consejos personalizados para mejorar tu flujo de caja.</DialogDescription>
-              </DialogHeader>
-              <div className="-mx-4 max-h-[50vh] overflow-y-auto px-4 pb-4">
-                {Array.from({ length: 8 }).map((_, index) => (
-                  <p key={index} className="mb-4 leading-relaxed text-sm text-slate-700">
-                    Revisa tus gastos fijos y considera renegociar servicios recurrentes para liberar liquidez. Mantener un colchón de ahorro te ayuda a enfrentar imprevistos sin comprometer tu flujo operacional.
+                <div className="text-right">
+                  <p className={cn(
+                    "text-sm font-bold",
+                    transaction.type === "income" ? "text-emerald-500" : "text-rose-500"
+                  )}>
+                    {transaction.type === "income" ? "+" : "-"}${transaction.amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                   </p>
-                ))}
+                  <p className="text-[10px] text-blue-200/40 uppercase">Deducible</p>
+                </div>
+              </GlassCard>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Recommendations Section */}
+      <section className="px-4">
+        <GlassCard className="border-blue-500/30 bg-gradient-to-br from-blue-600/20 to-indigo-600/20 p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-blue-400">
+                <Sparkles size={20} />
               </div>
-            </DialogContent>
-          </Dialog>
-        </section>
-      </div>
-    </main>
+              <div>
+                <h3 className="text-lg font-bold text-white">Sugerencias VanTax</h3>
+                <p className="text-xs text-blue-200/60">Optimización AI personalizada</p>
+              </div>
+            </div>
+            
+            <p className="text-sm leading-relaxed text-blue-100/80">
+              Hemos detectado que puedes recuperar hasta <span className="font-bold text-white">$2,450 MXN</span> adicionales optimizando tus facturas de servicios este mes.
+            </p>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="h-12 w-full rounded-2xl bg-[#0175D9] font-bold text-white shadow-lg shadow-blue-500/40 hover:bg-blue-600">
+                  Explorar Recomendaciones
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="border-white/10 bg-[#0A0A1F] text-white">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+                    <Sparkles className="text-blue-400" />
+                    Recomendaciones AI
+                  </DialogTitle>
+                  <DialogDescription className="text-blue-200/60">
+                    Consejos personalizados para mejorar tu flujo de caja y maximizar devoluciones.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mt-4 space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                  {[
+                    "Revisa tus gastos fijos y considera renegociar servicios recurrentes para liberar liquidez.",
+                    "Asegúrate de solicitar CFDI de todos tus gastos médicos y dentales; son 100% deducibles.",
+                    "Tus aportaciones voluntarias a la AFORE pueden reducir significativamente tu base gravable.",
+                    "Mantén un colchón de ahorro te ayuda a enfrentar imprevistos sin comprometer tu flujo operacional.",
+                    "Registra tus facturas de colegiaturas antes del cierre de mes para asegurar su validación.",
+                    "Los intereses reales de tu crédito hipotecario son deducibles en tu declaración anual."
+                  ].map((tip, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-start gap-3 rounded-2xl border border-white/5 bg-white/5 p-4"
+                    >
+                      <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
+                      <p className="text-sm leading-relaxed text-blue-100/80">{tip}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </GlassCard>
+      </section>
+    </div>
   )
 }
+

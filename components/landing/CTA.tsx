@@ -2,6 +2,7 @@
 import { ArrowRight, Check } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { useRef } from 'react';
+import Link from 'next/link';
 
 export function CTA() {
   const ref = useRef(null);
@@ -109,33 +110,37 @@ export function CTA() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: '0 20px 50px rgba(1, 117, 217, 0.4)' }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto px-8 py-4 rounded-xl text-white flex items-center justify-center gap-2 transition-all shadow-xl relative overflow-hidden group bg-[#0175D9] font-bold"
-              >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30"
-                  animate={{
-                    x: ['-100%', '100%'],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    repeatDelay: 1,
-                  }}
-                  style={{ width: '50%' }}
-                />
-                <span className="relative z-10">Recupera tu dinero</span>
-                <ArrowRight className="w-5 h-5 relative z-10 transition-transform group-hover:translate-x-1" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto px-8 py-4 rounded-xl text-white border border-white/20 backdrop-blur-md transition-all font-bold"
-              >
-                Ver cómo funciona
-              </motion.button>
+              <Link href="/sign-up" className="w-full sm:w-auto">
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: '0 20px 50px rgba(1, 117, 217, 0.4)' }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full px-8 py-4 rounded-xl text-white flex items-center justify-center gap-2 transition-all shadow-xl relative overflow-hidden group bg-[#0175D9] font-bold"
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30"
+                    animate={{
+                      x: ['-100%', '100%'],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      repeatDelay: 1,
+                    }}
+                    style={{ width: '50%' }}
+                  />
+                  <span className="relative z-10">Regístrate</span>
+                  <ArrowRight className="w-5 h-5 relative z-10 transition-transform group-hover:translate-x-1" />
+                </motion.button>
+              </Link>
+              <Link href="/login" className="w-full sm:w-auto">
+                <motion.button
+                  whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full px-8 py-4 rounded-xl text-white border border-white/20 backdrop-blur-md transition-all font-bold"
+                >
+                  Inicia Sesión
+                </motion.button>
+              </Link>
             </motion.div>
           </div>
         </motion.div>

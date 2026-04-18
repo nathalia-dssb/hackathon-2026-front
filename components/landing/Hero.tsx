@@ -197,24 +197,28 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.5 }}
             className="flex flex-col items-center justify-center gap-4 sm:flex-row"
           >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="group flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#0175D9] px-8 py-4 font-semibold text-white shadow-xl shadow-blue-500/20 transition-all sm:w-auto"
-            >
-              <span>Escanear factura</span>
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </motion.button>
-            <motion.button
-              whileHover={{
-                scale: 1.05,
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
-              }}
-              whileTap={{ scale: 0.95 }}
-              className="w-full rounded-xl border border-white/10 px-8 py-4 font-semibold text-white backdrop-blur-md transition-all sm:w-auto"
-            >
-              Calcular saldo a favor
-            </motion.button>
+            <Link href="/sign-up" className="w-full sm:w-auto">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="group flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#0175D9] px-8 py-4 font-semibold text-white shadow-xl shadow-blue-500/20 transition-all sm:w-auto"
+              >
+                <span>Probar Ahora</span>
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </motion.button>
+            </Link>
+            <Link href="/login" className="w-full sm:w-auto">
+              <motion.button
+                whileHover={{
+                  scale: 1.05,
+                  backgroundColor: "rgba(255, 255, 255, 0.05)",
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full rounded-xl border border-white/10 px-8 py-4 font-semibold text-white backdrop-blur-md transition-all sm:w-auto"
+              >
+                Ver mis deducciones
+              </motion.button>
+            </Link>
           </motion.div>
 
           {/* Trust Indicators */}
