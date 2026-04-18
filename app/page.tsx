@@ -1,19 +1,38 @@
-import { Button } from "@/components/ui/button"
+"use client"
+import { motion } from "motion/react"
+import { Hero } from "@/components/landing/Hero"
+import { Features } from "@/components/landing/Features"
+import { ParallaxSection } from "@/components/landing/ParallaxSection"
+import { Stats } from "@/components/landing/Stats"
+import { Testimonials } from "@/components/landing/Testimonials"
+import { CTA } from "@/components/landing/CTA"
+import { Footer } from "@/components/landing/Footer"
+import { AnimatedBackground } from "@/components/landing/AnimatedBackground"
+import { FloatingElements } from "@/components/landing/FloatingElements"
+import { SmoothScroll } from "@/components/landing/SmoothScroll"
 
 export default function Page() {
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
+    <SmoothScroll>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        className="relative min-h-screen px-4 md:px-18"
+        style={{ backgroundColor: "#02011A" }}
+      >
+        <AnimatedBackground />
+        <FloatingElements />
+        <div className="relative z-10">
+          <Hero />
+          <Features />
+          <ParallaxSection />
+          <Stats />
+          <Testimonials />
+          <CTA />
+          <Footer />
         </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
-    </div>
+      </motion.div>
+    </SmoothScroll>
   )
 }
